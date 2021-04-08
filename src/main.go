@@ -11,7 +11,7 @@ import (
 	// "strings"
 )
 
-type JSON map[string]interface{}
+type response map[string]interface{}
 var jsonSeq *bool = flag.Bool("jsonSeq", false, "output JSON text sequence format")
 
 func Hello(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,7 @@ func Single(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	reader := csv.NewReader(file)
-	results := []JSON{}
+	results := []response{}
 	// read header
 	header, err := reader.Read()
 	if err == io.EOF {
@@ -41,7 +41,7 @@ func Single(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		// read csv body
-		rows, err := reader.Read()
+		line, err := reader.Read()
 		if err == io.EOF {
 			break
 		}
@@ -49,20 +49,20 @@ func Single(w http.ResponseWriter, r *http.Request) {
 			log.Fatalf("Error: csv Read fail: %v\n", err)
 		}
 
-		jsonData := make(JSON)
-		for i := range rows {
-			jsonData[header[i]] = string(rows[i])
+		responseData := make(response)
+		for i := range line {
+			responseData[header[i]] = string(line[i])
 		}
 
 		if *jsonSeq {
 			// output immediately
-			body, err := json.Marshal(jsonData)
+			body, err := json.Marshal(responseData)
 			if err != nil {
 				log.Fatalf("Error: json.Marshal fail: Input: %v, Message: %v", results, err)
 			}
 			fmt.Printf("%s\n", body)
 		} else {
-			results = append(results, jsonData)
+			results = append(results, responseData)
 		}
 	}
 
