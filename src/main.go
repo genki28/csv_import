@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"log"
-	"strings"
+	// "strings"
 )
 
 func Hello(w http.ResponseWriter, r *http.Request) {
@@ -36,8 +36,9 @@ func Single(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-		output := strings.Join(line[:], " for ") + "\n"
-		fmt.Fprintf(w, output)
+		// output := strings.Join(line, " for ") + "\n"
+		fmt.Printf("テスト")
+		fmt.Printf("%s\n", line)
 	}
 }
 
