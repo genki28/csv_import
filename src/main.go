@@ -79,8 +79,17 @@ func Single(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func ManyImport(w http.ResponseWriter, r *http.Request) {
+	if (r.Method != http.MethodPost) {
+		w.WriteHeader(http.StatusMethodNotAllowed) // 405
+		w.Write([]byte("POSTでこい"))
+		return
+	}
+}
+
 func main() {
 	http.HandleFunc("/singleImport", Single)
+	http.HandleFunc("/manyImport", ManyImport)
 	http.HandleFunc("/", Hello)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("ListenAndServe:", err)
