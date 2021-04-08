@@ -73,7 +73,9 @@ func Single(w http.ResponseWriter, r *http.Request) {
 			log.Fatalf("Error: json.Marshal fail: Input: %v, Message: %v", results, err)
 		}
 
-		fmt.Printf("%s\n", json)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json)
+		// fmt.Fprintln(w, json)
 	}
 }
 
