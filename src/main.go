@@ -2,12 +2,17 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"fmt"
 	"net/http"
 	"log"
+	"flag"
 	// "strings"
 )
+
+type JSON map[string]interface{}
+var jsonSeq *bool = flag.Bool("jsonSeq", false, "output JSON text sequence format")
 
 func Hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello World!")
@@ -27,18 +32,48 @@ func Single(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	reader := csv.NewReader(file)
+	results := []JSON{}
+	// read header
+	header, err := reader.Read()
+	if err == io.EOF {
+		return
+	}
 
 	for {
-		line, err := reader.Read()
+		// read csv body
+		rows, err := reader.Read()
 		if err == io.EOF {
 			break
-		} else if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		if err != nil {
+			log.Fatalf("Error: csv Read fail: %v\n", err)
 		}
 
-		// output := strings.Join(line, " for ") + "\n"
-		fmt.Printf("テスト")
-		fmt.Printf("%s\n", line)
+		jsonData := make(JSON)
+		for i := range rows {
+			jsonData[header[i]] = string(rows[i])
+		}
+
+		if *jsonSeq {
+			// output immediately
+			body, err := json.Marshal(jsonData)
+			if err != nil {
+				log.Fatalf("Error: json.Marshal fail: Input: %v, Message: %v", results, err)
+			}
+			fmt.Printf("%s\n", body)
+		} else {
+			results = append(results, jsonData)
+		}
+	}
+
+	if !*jsonSeq {
+		// Save the JSON file
+		json, err := json.MarshalIndent(results, "", "  ")
+		if err != nil {
+			log.Fatalf("Error: json.Marshal fail: Input: %v, Message: %v", results, err)
+		}
+
+		fmt.Printf("%s\n", json)
 	}
 }
 
